@@ -6,13 +6,17 @@
 
 import { getUserIds, getData, clearData} from "./storage.js";
 
+
+let currentUserId = null;
 // DOM Elements
+window.addEventListener("DOMContentLoaded", () => {
+
 const users = getUserIds();
 const userSelector = document.getElementById("user-selector");
 const bookmarkForm = document.getElementById("book-form");
 const bookmarkList = document.getElementById("bookmark-list");
 
-console.log(userSelector);
+
 // populate the dropdown
 
 users.forEach((userId) => {
@@ -20,20 +24,17 @@ users.forEach((userId) => {
   option.value = userId;
   option.textContent = `User ${userId}`;
   userSelector.appendChild(option);
-  console.log(userSelector);
 
 });
 
 // handling user selection
 
 userSelector.addEventListener("change", ()=> {
-const currentUserId = userSelector.value;
-console.log(currentUserId);
+ currentUserId = userSelector.value;
 if(currentUserId === "Select the User"){
-  bookmarkList.innerHTML = "";
 }
-
+console.log(currentUserId);
 })
 
 
-
+});
