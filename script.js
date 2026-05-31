@@ -7,35 +7,33 @@
 import { getUserIds, getData, clearData} from "./storage.js";
 
 // DOM Elements
-const users = getUserIds;
-
+const users = getUserIds();
 const userSelector = document.getElementById("user-selector");
 const bookmarkForm = document.getElementById("book-form");
 const bookmarkList = document.getElementById("bookmark-list");
-const titleInput = document.getElementById("title");
-const urlInput = document.getElementById("description");
-const descriptionInput= document.getElementById("description");
 
+console.log(userSelector);
 // populate the dropdown
 
-userSelector.addEventListener("change", ()=> {
-  const currentUserId = userSelector.value;
-
-  if(currentUserId === "Select the user"){
-    bookmarkList.innerHTML = "";
-
-  }else{
-    displayBookmarks(currentUserId);
-  }
+users.forEach((userId) => {
+  const option = document.createElement("option");
+  option.value = userId;
+  option.textContent = `User ${userId}`;
+  userSelector.appendChild(option);
+  console.log(userSelector);
 
 });
 
-function displayBookmarks(userId){
+// handling user selection
 
-  const bookmarks = getData(currentUserId)
-
-
+userSelector.addEventListener("change", ()=> {
+const currentUserId = userSelector.value;
+console.log(currentUserId);
+if(currentUserId === "Select the User"){
+  bookmarkList.innerHTML = "";
 }
+
+})
 
 
 
