@@ -90,8 +90,7 @@ if (typeof window !== "undefined") {
 function displayBookmarks(userId) {
   const bookmarkList = document.querySelector(".bookmark-list");
   const emptyText = bookmarkList.querySelector(".empty-text");
-console.log(bookmarkList);
-console.log(emptyText);
+
   // Clear previous bookmarks FIRST
   bookmarkList
     .querySelectorAll(".bookmark-item")
