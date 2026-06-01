@@ -18,7 +18,7 @@ if (typeof window !== "undefined") {
 
     // Handle user selection
     userSelector.addEventListener("change", function () {
-      const selectedUserId = this.value;
+      const selectedUserId = userSelector.value;
       if (selectedUserId && selectedUserId !== "Select the User") {
         currentUserId = selectedUserId;
         displayBookmarks(selectedUserId);
@@ -126,7 +126,7 @@ function createBookmarkElement(bookmark, userId) {
 
   div.innerHTML = `
     <div class="bookmark-title">
-      <a href="${bookmark.url}" target="_blank" rel="noopener noreferrer">${bookmark.title}</a>
+      <a href="${bookmark.url}" target="_blank" rel= "noopener noreferrer">${bookmark.title}</a>
     </div>
     <div class="bookmark-description">${bookmark.description}</div>
     <div class="bookmark-meta">
