@@ -1,120 +1,185 @@
-// This is a placeholder file which shows how you can access functions defined in other files.
-// It can be loaded into index.html.
-// You can delete the contents of the file once you have understood how it works.
-// Note that when running locally, in order to open a web page which uses modules, you must serve the directory over HTTP e.g. with https://www.npmjs.com/package/http-server
-// You can't open the index.html file using a file:// URL.
+import { getUserIds, getData, setData } from "./storage.js";
 
-import { getUserIds, getData, clearData} from "./storage.js";
+let currentUserId = null;
 
-// DOM Elements
-const users = getUserIds;
+if (typeof window !== "undefined") {
+  window.onload = function () {
+    const users = getUserIds();
+    const userSelector = document.getElementById("user-selector");
+    const bookmarkForm = document.getElementById("book-form");
 
-const userSelector = document.getElementById("user-selector");
-const bookmarkForm = document.getElementById("book-form");
-const bookmarkList = document.getElementById("bookmark-list");
-const titleInput = document.getElementById("title");
-const urlInput = document.getElementById("description");
-const descriptionInput= document.getElementById("description");
+    // Populate dropdown
+    users.forEach((userId) => {
+      const option = document.createElement("option");
+      option.value = userId;
+      option.textContent = `User ${userId}`;
+      userSelector.appendChild(option);
+    });
 
-// populate the dropdown
+    // Handle user selection
+    userSelector.addEventListener("change", function () {
+      const selectedUserId = userSelector.value;
+      if (selectedUserId && selectedUserId !== "Select the User") {
+        currentUserId = selectedUserId;
+        displayBookmarks(selectedUserId);
+      } else {
+        currentUserId = null;
+        clearBookmarkDisplay();
+      }
+    });
 
-userSelector.addEventListener("change", ()=> {
-  const currentUserId = userSelector.value;
+    // Handle form submission
+    bookmarkForm.addEventListener("submit", function (e) {
+      e.preventDefault();
 
-  if(currentUserId === "Select the user"){
-    bookmarkList.innerHTML = "";
+      if (!currentUserId) {
+        alert("Please select a user first!");
+        return;
+      }
 
-  }else{
-    displayBookmarks(currentUserId);
-  }
+      const title = document.getElementById("title").value.trim();
+      const url = document.getElementById("url").value.trim();
+      const description = document.getElementById("description").value.trim();
 
-});
+      if (!title || !url || !description) {
+        alert("Please fill in all fields!");
+        return;
+      }
 
-function displayBookmarks(userId){
+      if (!isValidUrl(url)) {
+        alert("Please enter a valid URL (e.g., https://example.com)");
+        return;
+      }
 
-  const bookmarks = getData(currentUserId)
+      addBookmark(currentUserId, title, url, description);
+      bookmarkForm.reset();
+      displayBookmarks(currentUserId);
+    });
 
+    // Attach to window so inline onclick handlers can call these
+    window.copyToClipboard = function (url) {
+      navigator.clipboard
+        .writeText(url)
+        .then(() => console.log("URL copied!"))
+        .catch(() => {
+          const textArea = document.createElement("textarea");
+          textArea.value = url;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+        });
+    };
 
+    window.toggleLike = function (bookmarkId, userId) {
+      const bookmarks = getData(userId) || [];
+      const bookmark = bookmarks.find((b) => b.id === bookmarkId);
+      if (bookmark) {
+        bookmark.likes = (bookmark.likes || 0) + 1;
+        setData(userId, bookmarks);
+        displayBookmarks(userId);
+      }
+    };
+  };
 }
 
+// ========================
+// Pure functions
+// ========================
 
+function displayBookmarks(userId) {
+  const bookmarkList = document.querySelector(".bookmark-list");
+  const emptyText = bookmarkList.querySelector(".empty-text");
 
-// window.onload = function () {
-//   const users = getUserIds();
-//   document.querySelector("body").innerText = `There are ${users.length} users`;
-// };
-let myBookmarks = [];
+  // Clear previous bookmarks FIRST
+  bookmarkList
+    .querySelectorAll(".bookmark-item")
+    .forEach((item) => item.remove());
 
-function renderBookmarks() {
-  const container = document.getElementById('bookmarks-container');
-  container.innerHTML = ""; // Clear the container first
+  // Reset empty state
+  emptyText.style.display = "none";
 
-  
-  if (myBookmarks.length === 0) {
-    // Create a message element if the list is empty
-    const emptyMessage = document.createElement('p');
-    emptyMessage.className = 'no-bookmarks-message';
-    emptyMessage.textContent = "There are no bookmarks for this user.";
+  const bookmarks = getData(userId) || [];
 
-    container.appendChild(emptyMessage);
-    return; // Stop the function here so it doesn't look for bookmarks
+  // Handle empty user
+  if (bookmarks.length === 0) {
+    emptyText.style.display = "block";
+    emptyText.textContent = `No bookmarks yet for User ${userId}.`;
+    return;
   }
-  // Pull the latest saved likes object state (defaults to empty object if nothing saved)
 
-  const savedLikesData = getData(STORAGE_USER_ID) || {};
-  myBookmarks.forEach(bookmark => {
-    // Get the saved likes for this bookmark ID, default to 0
-    const currentLikes = savedLikesData[bookmark.id] || 0;
-    
+  const sortedBookmarks = [...bookmarks].sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
+  );
 
-    // Create a wrapper div for the card
-    const card = document.createElement('div');
-    card.className = 'bookmark-card';
-
-    // Build the inner HTML template including your copy and like buttons
-    card.innerHTML = `
-            <a href="${bookmark.url}" target="_blank"><strong>${bookmark.title}</strong></a>
-            <div class="actions">
-                <button class="copy-btn">📋 Copy URL</button>
-                <button class="like-btn">❤️ Like (<span class="like-count">${currentLikes}</span>)</button>
-            </div>
-        `;
-
-    // --- BUTTON 1 LOGIC: Copy to Clipboard ---
-    const copyBtn = card.querySelector('.copy-btn');
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(bookmark.url)
-        .then(() => {
-          const originalText = copyBtn.textContent;
-          copyBtn.textContent = "✅ Copied!";
-          setTimeout(() => copyBtn.textContent = originalText, 1500);
-        });
-    });
-
-    // --- BUTTON 2 LOGIC: Like Counter & Storage Sync ---
-    const likeBtn = card.querySelector('.like-btn');
-    const countSpan = card.querySelector('.like-count');
-
-    likeBtn.addEventListener('click', () => {
-      // Get fresh data state from local storage
-      const currentSavedLikes = getData(STORAGE_USER_ID) || {};
-
-      // Increment the counter
-      const newLikes = (currentSavedLikes[bookmark.id] || 0) + 1;
-
-      // Update UI
-      countSpan.textContent = newLikes;
-
-      // Update local storage object
-      currentSavedLikes[bookmark.id] = newLikes;
-      setData(STORAGE_USER_ID, currentSavedLikes);
-    });
-
-    // Append the finished card onto your web page container
-    
-    container.appendChild(card);
+  sortedBookmarks.forEach((bookmark) => {
+    const bookmarkElement = createBookmarkElement(bookmark, userId);
+    bookmarkList.appendChild(bookmarkElement);
   });
 }
 
-// Run the function when the script loads
-renderBookmarks();
+function createBookmarkElement(bookmark, userId) {
+  const div = document.createElement("div");
+  div.className = "bookmark-item";
+
+  const timestamp = new Date(bookmark.timestamp).toLocaleString();
+
+  div.innerHTML = `
+    <div class="bookmark-title">
+      <a href="${bookmark.url}" target="_blank" rel= "noopener noreferrer">${bookmark.title}</a>
+    </div>
+    <div class="bookmark-description">${bookmark.description}</div>
+    <div class="bookmark-meta">
+      <span>Created: ${timestamp}</span>
+      <div class="bookmark-actions">
+        <button class="copy-btn" onclick="copyToClipboard('${bookmark.url}')">📋 Copy URL</button>
+        <button class="like-btn" onclick="toggleLike('${bookmark.id}', '${userId}')">
+          ❤️ <span class="like-count">${bookmark.likes || 0}</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  return div;
+}
+
+function addBookmark(userId, title, url, description) {
+  const bookmarks = getData(userId) || [];
+
+  const newBookmark = {
+    id: generateId(),
+    title: title,
+    url: url,
+    description: description,
+    timestamp: new Date().toISOString(),
+    likes: 0,
+  };
+
+  bookmarks.push(newBookmark);
+  setData(userId, bookmarks);
+}
+
+function clearBookmarkDisplay() {
+  const bookmarkList = document.querySelector(".bookmark-list");
+  const emptyText = bookmarkList.querySelector(".empty-text");
+  const existingBookmarks = bookmarkList.querySelectorAll(".bookmark-item");
+
+  existingBookmarks.forEach((item) => item.remove());
+  emptyText.style.display = "block";
+  emptyText.textContent = "No bookmarks yet.";
+}
+
+function isValidUrl(string) {
+  try {
+    const url = new URL(string);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+

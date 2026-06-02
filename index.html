@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="index.css" />
     <title>Shared Bookmarks</title>
-    <script type="module" src="script.js"></script>
-    <script type="module" src="storage.js"></script>
   </head>
 
   <body>
@@ -14,7 +12,7 @@
 
     <main>
       <div class="container">
-        <div class="bookmark-list">
+        <div id = "bookmark-list" class="bookmark-list">
           <div class="user-select-box">
             <label for="user-selector">Select user:</label>
             <select id="user-selector">
@@ -22,9 +20,8 @@
             </select>
           </div>
           <br />
-          <p>User Bookmarks:</p>
-                <div id="bookmarks-container"  class="bookmark-card" > 
-      </div>
+          <h2>User Bookmarks</h2>
+          <p class="empty-text">No bookmarks yet.</p>
         </div>
 
         <form id="book-form">
@@ -45,6 +42,7 @@
 
 
     </main>
+    <script type="module" src="script.js"></script>
   </body>
 </html>
 
