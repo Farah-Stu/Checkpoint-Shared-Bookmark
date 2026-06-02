@@ -83,9 +83,9 @@ if (typeof window !== "undefined") {
   };
 }
 
-// ========================
-// Pure functions
-// ========================
+// =================================
+// // Core bookmark functionality
+// =================================
 
 function displayBookmarks(userId) {
   const bookmarkList = document.querySelector(".bookmark-list");
