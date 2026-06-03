@@ -1,4 +1,5 @@
 import { getUserIds, getData, setData } from "./storage.js";
+export { isValidUrl }
 
 let currentUserId = null;
 
