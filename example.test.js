@@ -1,4 +1,3 @@
-
 // Simple localStorage mock for Node
 global.localStorage = {
   store: {},
@@ -16,19 +15,19 @@ global.localStorage = {
   },
 };
 
-
 import assert from "node:assert";
 import test from "node:test";
 import { getUserIds, setData, getData } from "./storage.js";
 import { addBookmark, generateId, isValidUrl } from "./script.js";
 
 // 1. Test URL Validation, test edge cases(http, https, XSS ,ftp, invalid-url)
+
 test("isValidUrl blocks bad protocols and accepts valid web links", () => {
   const cases = [
     { input: "https://google.com", expected: true }, // Accepts https protocol
     { input: "http://localhost:3000", expected: true }, // Accepts http protocol
     { input: "javascript:alert('xss')", expected: false }, // Blocks XSS exploits (Hacks)
-    { input: "ftp://files.com", expected: false },  // Blocks wrong protocols
+    { input: "ftp://files.com", expected: false }, // Blocks wrong protocols
     { input: "not-a-url", expected: false }, // Blocks unknown strings
   ];
 
@@ -55,7 +54,6 @@ test("Adding a bookmark stores correct data structure", () => {
   assert.ok(bookmarks[0].id);
 });
 
-
 // 3. generateId produces valid, unique base‑36 identifiers
 
 test("generateId returns a string", () => {
@@ -73,6 +71,3 @@ test("generateId returns only base-36 characters", () => {
   const id = generateId();
   assert.match(id, /^[a-z0-9]+$/);
 });
-
-
-
