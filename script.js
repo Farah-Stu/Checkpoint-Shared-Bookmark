@@ -134,7 +134,7 @@ function createBookmarkElement(bookmark, userId) {
       <div class="bookmark-actions">
         <button class="copy-btn" onclick="copyToClipboard('${bookmark.url}')">📋 Copy URL</button>
         <button class="like-btn" onclick="toggleLike('${bookmark.id}', '${userId}')">
-          ❤️ <span class="like-count">${bookmark.likes || 0}</span>
+          👍 <span class="like-count">${bookmark.likes || 0}</span>
         </button>
       </div>
     </div>
