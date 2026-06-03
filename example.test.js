@@ -20,13 +20,24 @@ global.localStorage = {
 import assert from "node:assert";
 import test from "node:test";
 import { getUserIds, setData, getData } from "./storage.js";
-import { addBookmark, generateId } from "./script.js";
+import { addBookmark, generateId, isValidUrl } from "./script.js";
 
-test("User count is correct", () => {
-  assert.equal(getUserIds().length, 5);
+// 1. Test URL Validation, test edge cases(http, https, XSS ,ftp, invalid-url)
+test("isValidUrl blocks bad protocols and accepts valid web links", () => {
+  const cases = [
+    { input: "https://google.com", expected: true }, // Accepts https protocol
+    { input: "http://localhost:3000", expected: true }, // Accepts http protocol
+    { input: "javascript:alert('xss')", expected: false }, // Blocks XSS exploits (Hacks)
+    { input: "ftp://files.com", expected: false },  // Blocks wrong protocols
+    { input: "not-a-url", expected: false }, // Blocks unknown strings
+  ];
+
+  cases.forEach(({ input, expected }) => {
+    assert.strictEqual(isValidUrl(input), expected, `Failed on: ${input}`);
+  });
 });
 
-// 1. Adding a bookmark stores correct data
+// 2. Adding a bookmark stores correct data
 
 test("Adding a bookmark stores correct data structure", () => {
   const userId = "user1";
@@ -45,7 +56,7 @@ test("Adding a bookmark stores correct data structure", () => {
 });
 
 
-// 2. generateId produces valid, unique base‑36 identifiers
+// 3. generateId produces valid, unique base‑36 identifiers
 
 test("generateId returns a string", () => {
   const id = generateId();
