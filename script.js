@@ -183,3 +183,5 @@ function generateId() {
 }
 
 
+// Export only pure functions for Node tests
+export { addBookmark, isValidUrl, generateId };
